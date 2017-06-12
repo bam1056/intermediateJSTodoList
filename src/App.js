@@ -14,6 +14,70 @@ class App extends Component {
     }
   }
 
+  componentWillMount () {
+    fetch(`https://one-list-api.herokuapp.com/items?access_token=${TOKEN}`)
+      .then((resp) => { return resp.json() })
+      .then((data) => {
+        this.setState({ listItems: data })
+      })
+  }
+
+  addToList = (newListText) => {
+    const newListItems = this.state.listItems
+    fetch(`https://one-list-api.herokuapp.com/items?access_token=${TOKEN}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        item: {
+          text: newListText
+        }
+      })
+    })
+    .then((response) => { return response.json() })
+    .then((data) => {
+      newListItems.push(data)
+      this.setState({
+        listItems: newListItems
+      })
+    })
+  }
+
+  completeItem = (index) => {
+  const newListItems = this.state.listItems
+  const item = newListItems[index]
+  fetch(`https://one-list-api.herokuapp.com/items/${item.id}?access_token=${TOKEN}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      item: {
+        complete: `${!item.complete}`
+      }
+    })
+  })
+  .then((response) => { return response.json() })
+  .then((data) => {
+    newListItems[index] = data
+    this.setState({
+      listItems: newListItems
+    })
+  })
+}
+
+removeItem = (index) => {
+  const newListItems = this.state.listItems
+  const item = newListItems[index]
+  fetch(`https://one-list-api.herokuapp.com/items/${item.id}?access_token=${TOKEN}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' }
+  })
+  .then(() => {
+    newListItems.splice(index, 1)
+    this.setState({
+      listItems: newListItems
+    })
+  })
+}
+
 
   render () {
     return (
